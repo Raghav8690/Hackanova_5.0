@@ -313,7 +313,7 @@ async def find_citations(paper_url: str, top_k: int = 12) -> list[CitationInfo]:
     """
     llm = ChatGoogleGenerativeAI(
         model="gemini-2.0-flash",
-        google_api_key="AIzaSyAqONhAQIqH0gKJ4e3r-hMxus8YM75ir9A",
+        google_api_key=settings.GEMINI_API_KEY_CITATION,
         temperature=0.1,
     )
     
