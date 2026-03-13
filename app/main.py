@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import init_db
 from app.routers import citation, crawler
+from app.routers import citation, crawler, synthesizer
 
 # Configure logging
 logging.basicConfig(
@@ -54,6 +55,7 @@ app.add_middleware(
 # Mount routers
 app.include_router(citation.router)
 app.include_router(crawler.router)
+app.include_router(synthesizer.router)
 
 
 @app.get("/", tags=["Health"])
@@ -68,6 +70,8 @@ async def root():
             "papers": "/crawler/papers",
             "paper_detail": "/crawler/papers/{unique_id}",
             "citation_tree": "/crawler/tree/{unique_id}",
+            "synthesize_update": "/synthesizer/update", 
+            "synthesize_state": "/synthesizer/state",
             "docs": "/docs",
         },
     }

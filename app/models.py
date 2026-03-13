@@ -101,3 +101,40 @@ class CitationTreeNode(BaseModel):
 
 # Allow self-referencing model
 CitationTreeNode.model_rebuild()
+
+
+
+# ──────────────────────────────────────────────
+# Knowledge Synthesis Agent Models
+# ──────────────────────────────────────────────
+
+class SynthesisRequest(BaseModel):
+    """Request to update global knowledge using a specific paper node."""
+    unique_id: str = Field(..., description="Unique ID of the paper to synthesize")
+
+class ThematicCluster(BaseModel):
+    theme: str
+    nodes: list[str] = Field(description="List of unique_ids belonging to this theme")
+    summary: str
+
+class ContradictionSide(BaseModel):
+    claim: str
+    nodes: list[str] = Field(description="List of unique_ids supporting this claim")
+
+class Contradiction(BaseModel):
+    issue: str
+    side_a: ContradictionSide
+    side_b: ContradictionSide
+    resolution_status: str
+
+class TimelineEvent(BaseModel):
+    year: int
+    event: str
+    impact: str
+
+class GlobalKnowledgeState(BaseModel):
+    topic_overview: str
+    thematic_clusters: list[ThematicCluster]
+    contradiction_matrix: list[Contradiction]
+    timeline: list[TimelineEvent]
+    research_gaps: list[str]
