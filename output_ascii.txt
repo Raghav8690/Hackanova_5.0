@@ -1,0 +1,13 @@
+Starting test crawl on sample paper...
+
+Crawl Result: {'status': 'completed', 'total_papers_processed': 0, 'paper_ids': ['2024_alice_researcher_mock_citation_1_of_cit1', '2023_bob_scientist_mock_citation_2_of_cit1', '2024_alice_researcher_mock_citation_1_of_03762', '2024_alice_researcher_mock_citation_1_of_cit2', '2023_bob_scientist_mock_citation_2_of_cit2', '2023_bob_scientist_mock_citation_2_of_03762', 'unknown_unknown_https_arxiv_org_abs_1706_03762'], 'message': 'DFS recursive crawl complete. Processed 0 papers from 1 root paper(s) with max_depth=2.'}
+
+Checking SQLite database...
+Total papers in DB: 7
+- ID: unknown_unknown_https_arxiv_org_abs_1706_03762 | Depth: 0 | Parent: None
+- ID: 2024_alice_researcher_mock_citation_1_of_03762 | Depth: 1 | Parent: unknown_unknown_https_arxiv_org_abs_1706_03762
+- ID: 2023_bob_scientist_mock_citation_2_of_03762 | Depth: 1 | Parent: unknown_unknown_https_arxiv_org_abs_1706_03762
+- ID: 2024_alice_researcher_mock_citation_1_of_cit1 | Depth: 2 | Parent: 2024_alice_researcher_mock_citation_1_of_03762
+- ID: 2023_bob_scientist_mock_citation_2_of_cit1 | Depth: 2 | Parent: 2024_alice_researcher_mock_citation_1_of_03762
+- ID: 2024_alice_researcher_mock_citation_1_of_cit2 | Depth: 2 | Parent: 2023_bob_scientist_mock_citation_2_of_03762
+- ID: 2023_bob_scientist_mock_citation_2_of_cit2 | Depth: 2 | Parent: 2023_bob_scientist_mock_citation_2_of_03762

@@ -1,0 +1,54 @@
+python : C:\Users\Dell
+\AppData\Roaming\Pytho
+n\Python314\site-packa
+ges\langchain_core\_ap
+i\deprecation.py:25: 
+UserWarning: Core 
+Pydantic V1 
+functionality isn't 
+compatible with 
+Python 3.14 or 
+greater.
+At line:1 char:1
++ python 
+test_import.py > 
+trace.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (C:\Users\D   
+ ell\A....14 or gr    
+eater.:String) []    
+, RemoteException
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+  from 
+pydantic.v1.fields 
+import FieldInfo as 
+FieldInfoV1
+Traceback (most 
+recent call last):
+  File 
+"C:\D-Drive\hackanova 
+5.0\test_import.py", 
+line 5, in <module>
+    from 
+langchain.agents 
+import AgentExecutor, 
+create_tool_calling_ag
+ent
+ImportError: cannot 
+import name 
+'AgentExecutor' from 
+'langchain.agents' (C:
+\Users\Dell\AppData\Ro
+aming\Python\Python314
+\site-packages\langcha
+in\agents\__init__.py)
+---
+OK: langchain_google_genai
+OK: langchain_core.tools
+OK: langchain_core.prompts

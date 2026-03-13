@@ -1,0 +1,120 @@
+python : C:\Users\Dell
+\AppData\Roaming\Pytho
+n\Python314\site-packa
+ges\langchain_core\_ap
+i\deprecation.py:25: 
+UserWarning: Core 
+Pydantic V1 
+functionality isn't 
+compatible with 
+Python 3.14 or 
+greater.
+At line:1 char:1
++ python 
+test_crawler.py > 
+crawl_output.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (C:\Users\D   
+ ell\A....14 or gr    
+eater.:String) []    
+, RemoteException
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+  from 
+pydantic.v1.fields 
+import FieldInfo as 
+FieldInfoV1
+INFO:app.database:Data
+base initialized at 
+research_papers.db
+INFO:app.agents.crawli
+ng_agent:=============
+======================
+======================
+===
+INFO:app.agents.crawli
+ng_agent:Starting 
+recursive DFS crawl 
+for root: https://arxi
+v.org/abs/1706.03762
+INFO:app.agents.crawli
+ng_agent:Max depth: 2 
+| Top K: 2
+INFO:app.agents.crawli
+ng_agent:=============
+======================
+======================
+===
+WARNING:app.agents.cra
+wling_agent:Paper 
+Analyzer unavailable 
+for https://arxiv.org/
+abs/1706.03762: All 
+connection attempts 
+failed. Using 
+citation metadata.
+INFO:app.agents.crawli
+ng_agent:DFS 
+Visiting: unknown_unkn
+own_https_arxiv_org_ab
+s_1706_03762 at depth 
+0
+ERROR:app.agents.crawl
+ing_agent:Citation 
+Agent failed for https
+://arxiv.org/abs/1706.
+03762: 1 validation 
+error for 
+ChatGoogleGenerativeAI
+  Value error, API 
+key required for 
+Gemini Developer API. 
+Provide api_key 
+parameter or set GOOGL
+E_API_KEY/GEMINI_API_K
+EY environment 
+variable. 
+[type=value_error, 
+input_value={'model': 
+'gemini-2.0-fla...0.1,
+ 'model_kwargs': {}}, 
+input_type=dict]
+    For further 
+information visit http
+s://errors.pydantic.de
+v/2.12/v/value_error. 
+Continuing...
+INFO:app.agents.crawli
+ng_agent:Processing 
+data for node: unknown
+_unknown_https_arxiv_o
+rg_abs_1706_03762 
+(depth 0)
+WARNING:app.agents.cra
+wling_agent:Paper 
+Analyzer unavailable 
+for https://arxiv.org/
+abs/1706.03762: All 
+connection attempts 
+failed. Using 
+citation metadata.
+INFO:app.agents.crawli
+ng_agent:DFS 
+recursive crawl 
+complete. Processed 0 
+papers from 1 root 
+paper(s) with 
+max_depth=2.
+Starting test crawl on sample paper...
+
+Crawl Result: {'status': 'completed', 'total_papers_processed': 0, 'paper_ids': ['unknown_unknown_https_arxiv_org_abs_1706_03762'], 'message': 'DFS recursive crawl complete. Processed 0 papers from 1 root paper(s) with max_depth=2.'}
+
+Checking SQLite database...
+Total papers in DB: 1
+- ID: unknown_unknown_https_arxiv_org_abs_1706_03762 | Depth: 0 | Parent: None
