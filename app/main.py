@@ -10,8 +10,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import init_db
-from app.routers import citation, crawler
-from app.routers import citation, crawler, synthesizer
 from app.routers import citation, crawler, synthesizer, discovery
 
 # Configure logging

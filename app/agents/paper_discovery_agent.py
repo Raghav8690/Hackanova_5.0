@@ -129,13 +129,14 @@ class PaperDiscoveryAgent:
         keywords = analysis.keywords or [analysis.original_query]
         results = {}
         for keyword in keywords:
-            source_results = {}
+            all_papers = []
             for source_name, fetcher in self._FETCHERS:
-                papers = []
-                try: papers = fetcher([keyword])
-                except Exception: pass
-                unique = list({p.url: p for p in papers if p.url}.values())
-                top_papers = _rank_and_select(unique, analysis.keywords, top_k=TOP_K_PAPERS)
-                source_results[source_name.lower().replace(" ", "_")] = [p.url for p in top_papers]
-            results[keyword] = source_results
-        return {"query": analysis.original_query, "keywords": results}
+                try: 
+                    papers = fetcher([keyword])
+                    all_papers.extend(papers)
+                except Exception: 
+                    pass
+            unique = list({p.url: p for p in all_papers if p.url}.values())
+            top_papers = _rank_and_select(unique, analysis.keywords, top_k=TOP_K_PAPERS)
+            results[keyword] = [p.url for p in top_papers]
+        return {"query": analysis.original_query, "results": results}

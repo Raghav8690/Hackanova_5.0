@@ -2,8 +2,9 @@ import traceback
 import sys
 
 try:
-    from langchain.agents import AgentExecutor, create_tool_calling_agent
-    print("OK: langchain.agents")
+    from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
+    from langchain_core.tools import tool
+    print("OK: langchain_core")
 except Exception:
     traceback.print_exc()
     print("---")

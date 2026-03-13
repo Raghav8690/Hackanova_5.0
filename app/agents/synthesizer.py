@@ -66,19 +66,26 @@ def update_global_knowledge_task(node: PaperNode):
     {json.dumps(minimal_node_data, indent=2)}
     """
 
+    prompt += "\nReturn the updated state as a valid JSON object matching the GlobalKnowledgeState schema."
+
     try:
-        logger.info(f"Triggering Gemini Synthesis for {node.unique_id}...")
+        logger.info(f"Triggering Gemma Synthesis for {node.unique_id}...")
         response = client.models.generate_content(
-            model='gemini-2.5-flash', # Fast and cheap
+            model='gemma-3-27b-it', # Bypassing Gemini 429s
             contents=prompt,
             config=types.GenerateContentConfig(
                 temperature=0.1,
-                response_mime_type="application/json",
-                response_schema=GlobalKnowledgeState,
             ),
         )
         
-        updated_state_dict = json.loads(response.text)
+        # Extract JSON from potential markdown code blocks
+        text = response.text
+        if "```json" in text:
+            text = text.split("```json")[-1].split("```")[0].strip()
+        elif "```" in text:
+            text = text.split("```")[-1].split("```")[0].strip()
+            
+        updated_state_dict = json.loads(text)
         write_global_state(updated_state_dict)
         logger.info(f"Successfully updated global state file using {node.unique_id}")
         
