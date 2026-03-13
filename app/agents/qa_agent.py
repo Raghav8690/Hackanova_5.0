@@ -15,13 +15,15 @@ from pathlib import Path
 from typing import Optional
 import re
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from app.config import settings, RATE_LIMIT_DELAY
 
 logger = logging.getLogger(__name__)
 
 # Configure Gemini API
-genai.configure(api_key=settings.GEMINI_API_KEY_QUERY)
+# genai configuration is handled per client instance
+client = genai.Client(api_key=settings.GEMINI_API_KEY_QUERY)
 
 
 # ──────────────────────────────────────────────
@@ -197,10 +199,17 @@ async def answer_query(query: str, topic: Optional[str] = None) -> dict:
         # Rate limiting
         time.sleep(RATE_LIMIT_DELAY)
         
-        # Call Gemini
-        model = genai.GenerativeModel("gemini-2.0-flash")
-        logger.info("Calling Gemini for Q&A")
-        response = model.generate_content(prompt)
+        # Call Gemma
+        logger.info("Calling Gemma for Q&A")
+        prompt += "\nReturn valid JSON."
+        
+        response = client.models.generate_content(
+            model='gemma-3-27b-it',
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                temperature=0.1,
+            )
+        )
         
         response_text = response.text.strip()
         

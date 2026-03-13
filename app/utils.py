@@ -86,6 +86,14 @@ def extract_arxiv_id(url: str) -> str | None:
     return None
 
 
+def extract_pmcid(url: str) -> str | None:
+    """Extract PubMed Central ID (PMCID) from a URL."""
+    match = re.search(r"PMC(\d+)", url, re.I)
+    if match:
+        return f"PMC{match.group(1)}"
+    return None
+
+
 def sanitize_url(url: str) -> str:
     """Clean up and normalize a URL."""
     url = url.strip()
@@ -114,6 +122,9 @@ def extract_paper_info_from_url(url: str) -> dict:
     elif "doi.org" in domain:
         info["source"] = "doi"
         info["doi"] = extract_doi_from_url(url)
+    elif "pmc.ncbi.nlm.nih.gov" in domain or "pubmed.ncbi.nlm.nih.gov" in domain:
+        info["source"] = "pubmed"
+        info["paper_id"] = extract_pmcid(url)
     elif "semanticscholar.org" in domain:
         info["source"] = "semantic_scholar"
         # Extract paper ID from S2 URL

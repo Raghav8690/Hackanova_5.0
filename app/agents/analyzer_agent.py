@@ -20,7 +20,8 @@ from typing import Optional
 import json
 import time
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from app.config import settings
 from app.models import PaperNode
 from app.utils import extract_arxiv_id, extract_doi_from_url, sanitize_url, generate_unique_id, RATE_LIMIT_DELAY
@@ -28,7 +29,8 @@ from app.utils import extract_arxiv_id, extract_doi_from_url, sanitize_url, gene
 logger = logging.getLogger(__name__)
 
 # Configure Gemini API
-genai.configure(api_key=settings.GEMINI_API_KEY_SYNTHESIS)
+# genai configuration is handled per client instance in the new SDK
+client = genai.Client(api_key=settings.GEMINI_API_KEY_SYNTHESIS)
 
 # HTTP client for fetching paper content
 _http_client = httpx.Client(timeout=30.0, follow_redirects=True)
@@ -200,12 +202,18 @@ def _analyze_with_gemini(paper_content: str, paper_url: str) -> dict:
         # Rate limiting
         time.sleep(RATE_LIMIT_DELAY)
         
-        model = genai.GenerativeModel("gemini-2.0-flash")
+        logger.info("Calling Gemma to analyze paper: %s", paper_url)
         
-        prompt = ANALYSIS_PROMPT_TEMPLATE.format(paper_content=paper_content[:8000])
-        
-        logger.info("Calling Gemini to analyze paper: %s", paper_url)
-        response = model.generate_content(prompt)
+        prompt = ANALYSIS_PROMPT_TEMPLATE.format(paper_content=paper_content[:15000]) # Increased context for Gemma
+        prompt += "\nReturn valid JSON."
+
+        response = client.models.generate_content(
+            model='gemma-3-27b-it',
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                temperature=0.1,
+            )
+        )
         
         # Parse the response
         response_text = response.text.strip()

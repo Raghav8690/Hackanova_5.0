@@ -19,9 +19,9 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
 from langchain_core.tools import tool
 
-from app.config import settings
+from app.config import settings, SEMANTIC_SCHOLAR_API_KEY
 from app.models import CitationInfo
-from app.utils import extract_arxiv_id, extract_doi_from_url, sanitize_url
+from app.utils import extract_arxiv_id, extract_doi_from_url, extract_pmcid, sanitize_url
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +30,20 @@ _http_client = httpx.Client(timeout=30.0, follow_redirects=True)
 
 SEMANTIC_SCHOLAR_API = "https://api.semanticscholar.org/graph/v1"
 CROSSREF_API = "https://api.crossref.org/works"
+
+SEMANTIC_SCHOLAR_HEADERS = {"x-api-key": SEMANTIC_SCHOLAR_API_KEY} if SEMANTIC_SCHOLAR_API_KEY else {}
+
+def _s2_get(endpoint: str, params: dict) -> httpx.Response:
+    """Helper for Semantic Scholar GET requests with retries for 429."""
+    for attempt in range(3):
+        response = _http_client.get(endpoint, params=params, headers=SEMANTIC_SCHOLAR_HEADERS)
+        if response.status_code == 429:
+            time.sleep(2 ** attempt)
+            continue
+        return response
+    return response
+
+import time
 
 
 # ──────────────────────────────────────────────
@@ -46,7 +60,7 @@ def search_semantic_scholar(query: str) -> str:
     """
     try:
         # First try paper search
-        response = _http_client.get(
+        response = _s2_get(
             f"{SEMANTIC_SCHOLAR_API}/paper/search",
             params={
                 "query": query,
@@ -92,7 +106,7 @@ def get_paper_references(paper_id: str) -> str:
     or a URL. Returns JSON list of referenced papers.
     """
     try:
-        response = _http_client.get(
+        response = _s2_get(
             f"{SEMANTIC_SCHOLAR_API}/paper/{paper_id}/references",
             params={
                 "limit": 50,
@@ -140,7 +154,7 @@ def get_paper_citations(paper_id: str) -> str:
     Returns JSON list of citing papers.
     """
     try:
-        response = _http_client.get(
+        response = _s2_get(
             f"{SEMANTIC_SCHOLAR_API}/paper/{paper_id}/citations",
             params={
                 "limit": 50,
@@ -229,12 +243,47 @@ def search_crossref(query: str) -> str:
         return json.dumps({"error": str(e)})
 
 
+@tool
+def get_paper_metadata_by_url(url: str) -> str:
+    """
+    Resolve a paper URL to a title and DOI/ID.
+    This helps identify a paper when direct ID lookup fails.
+    """
+    try:
+        # Try searching by URL in Semantic Scholar
+        response = _s2_get(
+            f"{SEMANTIC_SCHOLAR_API}/paper/search",
+            params={"query": url, "limit": 1, "fields": "title,authors,year,externalIds"},
+        )
+        if response.status_code == 200:
+            data = response.json().get("data", [])
+            if data:
+                return json.dumps(data[0])
+        
+        # Try CrossRef
+        response = _http_client.get(CROSSREF_API, params={"query": url, "rows": 1})
+        if response.status_code == 200:
+            items = response.json().get("message", {}).get("items", [])
+            if items:
+                item = items[0]
+                return json.dumps({
+                    "title": item.get("title", [""])[0],
+                    "doi": item.get("DOI", ""),
+                    "year": item.get("published-print", {}).get("date-parts", [[None]])[0][0]
+                })
+        
+        return json.dumps({"error": "Metadata not found for URL"})
+    except Exception as e:
+        return json.dumps({"error": str(e)})
+
+
 # Tools dictionary to map tool names to functions
 TOOLS = {
     "search_semantic_scholar": search_semantic_scholar,
     "get_paper_references": get_paper_references,
     "get_paper_citations": get_paper_citations,
     "search_crossref": search_crossref,
+    "get_paper_metadata_by_url": get_paper_metadata_by_url,
 }
 
 
@@ -249,9 +298,11 @@ academic search tools (Semantic Scholar and CrossRef).
 
 WORKFLOW:
 1. First, try to identify the paper using its URL (extract ArXiv ID or DOI if possible)
-2. Use get_paper_references to find papers cited BY this paper
-3. Use get_paper_citations to find papers that CITE this paper  
-4. If needed, use search_semantic_scholar or search_crossref with the paper's title/keywords
+2. If direct ID lookup (PMCID, DOI, ArXiv) fails with 404, use get_paper_metadata_by_url to resolve the URL.
+3. Use the revealed title/DOI to search for the paper and its citations.
+4. Use get_paper_references to find papers cited BY this paper
+5. Use get_paper_citations to find papers that CITE this paper  
+6. If needed, use search_semantic_scholar or search_crossref with the paper's title/keywords
 5. Combine all results, remove duplicates, and rank by relevance
 
 RANKING CRITERIA (in order of importance):
@@ -291,6 +342,11 @@ def _build_paper_identifier(paper_url: str) -> str:
     if doi:
         return f"DOI:{doi}"
 
+    # Try PMC
+    pmcid = extract_pmcid(url)
+    if pmcid:
+        return f"PMCID:{pmcid}"
+
     # Fall back to URL itself
     return f"URL:{url}"
 
@@ -311,8 +367,9 @@ async def find_citations(paper_url: str, top_k: int = 12) -> list[CitationInfo]:
     Returns:
         List of CitationInfo objects
     """
+    # Use Gemma-3 to avoid Gemini rate limits
     llm = ChatGoogleGenerativeAI(
-        model="gemini-2.0-flash",
+        model="gemma-3-27b-it",
         google_api_key=settings.GEMINI_API_KEY_CITATION,
         temperature=0.1,
     )
@@ -387,8 +444,15 @@ Return ONLY the JSON array, no other text."""
 
 def _parse_citations_from_output(output: str, top_k: int) -> list[CitationInfo]:
     """Parse citation list from the agent's text output."""
-    # Try to find JSON array in the output
-    json_match = re.search(r"\[[\s\S]*\]", output)
+    # Clean up Markdown JSON blocks if present
+    text = output
+    if "```json" in text:
+        text = text.split("```json")[-1].split("```")[0].strip()
+    elif "```" in text:
+        text = text.split("```")[-1].split("```")[0].strip()
+
+    # Try to find JSON array in the output if standard removal didn't work
+    json_match = re.search(r"\[[\s\S]*\]", text)
     if not json_match:
         logger.warning("No JSON array found in agent output")
         return []
@@ -396,7 +460,7 @@ def _parse_citations_from_output(output: str, top_k: int) -> list[CitationInfo]:
     try:
         raw_citations = json.loads(json_match.group())
     except json.JSONDecodeError:
-        logger.warning("Failed to parse JSON from agent output")
+        logger.warning("Failed to parse JSON from agent output: %s", text[:100])
         return []
 
     citations = []
@@ -425,11 +489,53 @@ async def _fallback_citation_search(paper_url: str, top_k: int) -> list[Citation
     paper_id = _build_paper_identifier(paper_url)
     citations = []
 
+    async def _safe_get_refs(pid):
+        try:
+            res = get_paper_references.invoke(pid)
+            if "error" in res:
+                return None
+            return json.loads(res) if isinstance(res, str) else res
+        except Exception:
+            return None
+
     try:
-        # Try getting references
-        refs_json = get_paper_references.invoke(paper_id)
-        refs = json.loads(refs_json) if isinstance(refs_json, str) else refs_json
-        if isinstance(refs, list):
+        # Try direct lookup
+        refs = await _safe_get_refs(paper_id)
+        
+        # If direct lookup fails, try metadata resolution (S2 or CrossRef)
+        if not refs:
+            meta_json = get_paper_metadata_by_url.invoke(paper_url)
+            meta = json.loads(meta_json)
+            if "title" in meta:
+                # Try S2 search first
+                search_res = search_semantic_scholar.invoke(meta["title"])
+                search_data = json.loads(search_res)
+                if isinstance(search_data, list) and search_data:
+                    best_match = search_data[0]
+                    resolved_id = None
+                    if best_match.get("doi"): resolved_id = f"DOI:{best_match['doi']}"
+                    elif best_match.get("url"): resolved_id = f"URL:{best_match['url']}"
+                    if resolved_id:
+                        refs = await _safe_get_refs(resolved_id)
+                
+                # If still no refs, try CrossRef
+                if not refs:
+                    cr_res = search_crossref.invoke(meta["title"])
+                    cr_data = json.loads(cr_res)
+                    if isinstance(cr_data, list) and cr_data:
+                        # CrossRef search gives us some papers, but usually not the references for the input paper itself
+                        # However, we can use the top result as a "fallback" if we can't find anything else
+                        for r in cr_data[:top_k]:
+                            citations.append(CitationInfo(
+                                title=r.get("title", ""),
+                                authors=r.get("authors", []),
+                                url=r.get("url", ""),
+                                year=r.get("year"),
+                                relevance_score=0.4,
+                                doi=r.get("doi"),
+                            ))
+
+        if not citations and isinstance(refs, list):
             for r in refs[:top_k]:
                 citations.append(CitationInfo(
                     title=r.get("title", ""),
