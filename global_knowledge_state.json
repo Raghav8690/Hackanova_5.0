@@ -1,12 +1,13 @@
 {
-  "topic_overview": "This initial overview is based on the paper 'Mock Citation 2 of /cit2', which provides a foundational understanding of the topic through its abstract.",
+  "topic_overview": "This initial overview is based on foundational papers, including 'Mock Citation 2 of /cit2' and 'https://arxiv.org/abs/2202.09741v5', which provide an abstract-level understanding of the topic.",
   "thematic_clusters": [
     {
       "theme": "Foundational Research and Overview",
       "nodes": [
-        "2023_bob_scientist_mock_citation_2_of_cit2"
+        "2023_bob_scientist_mock_citation_2_of_cit2",
+        "unknown_unknown_https_arxiv_org_abs_2202_09741v5"
       ],
-      "summary": "This cluster encompasses the initial understanding of the topic, as presented in the abstract of 'Mock Citation 2 of /cit2'. It serves as a starting point for further exploration."
+      "summary": "This cluster encompasses the initial understanding of the topic, as presented in the abstracts of foundational papers like 'Mock Citation 2 of /cit2' and 'https://arxiv.org/abs/2202.09741v5'. It serves as a starting point for further exploration."
     }
   ],
   "contradiction_matrix": [],

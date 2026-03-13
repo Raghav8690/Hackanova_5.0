@@ -9,6 +9,7 @@ from langchain_core.output_parsers import PydanticOutputParser
 from langchain_google_genai import ChatGoogleGenerativeAI
 from pydantic import BaseModel, Field
 from app.config import GEMINI_API_KEY, DOMAIN_SYNONYMS
+from app.config import settings
 
 logger = logging.getLogger("QueryAgent")
 
@@ -40,7 +41,7 @@ class QueryUnderstandingAgent:
     def __init__(self) -> None:
         if not GEMINI_API_KEY:
             raise ValueError("GEMINI_API_KEY is not set.")
-        os.environ.setdefault("GOOGLE_API_KEY", GEMINI_API_KEY)
+        os.environ.setdefault("GOOGLE_API_KEY", settings.GEMINI_API_KEY_QUERY)
         model_id = os.getenv("GEMINI_MODEL_ID") or "gemini-2.5-flash"
         self.llm = ChatGoogleGenerativeAI(model=model_id, temperature=0.1, convert_system_message_to_human=True)
         self.parser = PydanticOutputParser(pydantic_object=QueryAnalysisModel)

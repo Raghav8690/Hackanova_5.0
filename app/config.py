@@ -19,6 +19,7 @@ class Settings:
 
     GEMINI_API_KEY_CITATION: str = os.getenv("GEMINI_API_KEY_CITATION", "AIzaSy_fake_key_fallback")
     GEMINI_API_KEY_SYNTHESIS: str = os.getenv("GEMINI_API_KEY_sYNTHESIS", "AIzaSy_fake_key_fallback")
+    GEMINI_API_KEY_QUERY: str = os.getenv("GEMINI_API_KEY_QUERY", "AIzaSy_fake_key_fallback")
     DATABASE_PATH: str = os.getenv("DATABASE_PATH", "research_papers.db")
     MAX_DEPTH: int = int(os.getenv("MAX_DEPTH", "5"))
     TOP_K_CITATIONS: int = int(os.getenv("TOP_K_CITATIONS", "12"))
