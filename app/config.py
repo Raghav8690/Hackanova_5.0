@@ -33,3 +33,36 @@ class Settings:
 
 
 settings = Settings()
+
+# ──────────────────────────────────────────────────────────────────────────────
+# NEW: Constants for Paper Discovery & Query Understanding Agents
+# ──────────────────────────────────────────────────────────────────────────────
+
+# Use Synthesis key for generic Gemini tasks if a general one isn't provided
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", settings.GEMINI_API_KEY_SYNTHESIS)
+SEMANTIC_SCHOLAR_API_KEY = os.getenv("SEMANTIC_SCHOLAR_API_KEY", "")
+
+RATE_LIMIT_DELAY = 1.5          
+MAX_RETRIES      = 3            
+RETRY_BACKOFF    = 2.0          
+TOP_K_PAPERS     = 3            
+MAX_RESULTS_PER_QUERY = 20      
+
+ARXIV_API_URL           = "http://export.arxiv.org/api/query"
+PUBMED_ESEARCH_URL      = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
+PUBMED_EFETCH_URL       = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
+SEMANTIC_SCHOLAR_API_URL = "https://api.semanticscholar.org/graph/v1"
+GOOGLE_SCHOLAR_URL      = "https://scholar.google.com/scholar"
+
+DOMAIN_SYNONYMS = {
+    "reinforcement learning": ["deep reinforcement learning", "Q-learning", "policy gradient", "actor-critic", "temporal difference learning", "model-based RL"],
+    "smart grid": ["smart grids", "intelligent grid", "power grid", "microgrid", "electrical grid", "power systems"],
+    "energy efficiency": ["energy optimization", "power optimization", "energy management", "energy conservation", "demand response"],
+    "machine learning": ["deep learning", "neural networks", "supervised learning", "unsupervised learning", "transfer learning"],
+    "natural language processing": ["NLP", "text mining", "language model", "transformer", "text classification", "sentiment analysis"],
+    "computer vision": ["image recognition", "object detection", "image segmentation", "convolutional neural network", "CNN"],
+    "optimization": ["mathematical optimization", "convex optimization", "metaheuristic", "genetic algorithm", "swarm intelligence"],
+    "healthcare": ["clinical", "biomedical", "medical informatics", "health informatics", "electronic health records"],
+    "robotics": ["autonomous systems", "robot learning", "motion planning", "robot control", "manipulation"],
+    "internet of things": ["IoT", "sensor networks", "edge computing", "embedded systems", "cyber-physical systems"],
+}

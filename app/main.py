@@ -12,6 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.database import init_db
 from app.routers import citation, crawler
 from app.routers import citation, crawler, synthesizer
+from app.routers import citation, crawler, synthesizer, discovery
 
 # Configure logging
 logging.basicConfig(
@@ -56,7 +57,7 @@ app.add_middleware(
 app.include_router(citation.router)
 app.include_router(crawler.router)
 app.include_router(synthesizer.router)
-
+app.include_router(discovery.router)
 
 @app.get("/", tags=["Health"])
 async def root():

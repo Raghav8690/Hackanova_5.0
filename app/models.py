@@ -138,3 +138,19 @@ class GlobalKnowledgeState(BaseModel):
     contradiction_matrix: list[Contradiction]
     timeline: list[TimelineEvent]
     research_gaps: list[str]
+    
+    
+    
+class QueryRequest(BaseModel):
+    query: str
+
+class QueryAnalysisResponse(BaseModel):
+    analysis: dict
+
+class PaperDiscoveryRequest(BaseModel):
+    analysis: dict
+
+class PaperDiscoveryResponse(BaseModel):
+    result: dict
+    
+    
