@@ -4,11 +4,12 @@ import logging
 from google import genai
 from google.genai import types
 from app.models import GlobalKnowledgeState, PaperNode
+from app.config import settings
 
 logger = logging.getLogger(__name__)
 
 # Ensure your GEMINI_API_KEY is in your .env file
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+client = genai.Client(api_key=settings.GEMINI_API_KEY_SYNTHESIS)
 
 GLOBAL_STATE_FILE = "global_knowledge_state.json"
 

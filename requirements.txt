@@ -7,3 +7,4 @@ langchain-google-genai
 langchain-core
 httpx
 beautifulsoup4
+google-genai

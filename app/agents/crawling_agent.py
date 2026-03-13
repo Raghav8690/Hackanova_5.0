@@ -55,12 +55,30 @@ async def _call_paper_analyzer(paper_url: str) -> dict:
 
 async def _notify_updation_agent(unique_id: str) -> bool:
     """
-    Notify the Overall Updation Agent with the unique_id of a stored paper.
-    MOCKED: This simply logs the attempt since the agent is not ready.
+    Notify the Knowledge Synthesizer Agent with the unique_id of a stored paper.
     """
-    logger.info("MOCKED Notification: Sending unique_id %s to Overall Updation Agent", unique_id)
-    # Pretend it succeeded
-    return True
+    try:
+        # The user added the synthesizer endpoint locally
+        synthesizer_url = "http://localhost:8000/synthesizer/update"
+        response = await _http_client.post(
+            synthesizer_url,
+            json={"unique_id": unique_id},
+            timeout=15.0,
+        )
+        if response.status_code == 200:
+            logger.info("Notified Synthesizer Agent about %s", unique_id)
+            return True
+        else:
+            logger.warning(
+                "Synthesizer Agent returned %d for %s: %s",
+                response.status_code, unique_id, response.text
+            )
+            return False
+    except Exception as e:
+        logger.warning(
+            "Could not notify Synthesizer Agent for %s: %s", unique_id, e
+        )
+        return False
 
 
 def _build_node_data(
