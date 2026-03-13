@@ -10,7 +10,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import init_db
-from app.routers import citation, crawler, synthesizer, discovery
+from app.routers import citation, crawler, synthesizer, discovery, analyzer, qa
 
 # Configure logging
 logging.basicConfig(
@@ -56,6 +56,8 @@ app.include_router(citation.router)
 app.include_router(crawler.router)
 app.include_router(synthesizer.router)
 app.include_router(discovery.router)
+app.include_router(analyzer.router)
+app.include_router(qa.router)
 
 @app.get("/", tags=["Health"])
 async def root():
